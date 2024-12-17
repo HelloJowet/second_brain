@@ -1,0 +1,21 @@
+site_name: My Second Brain
+site_url: https://tranet.app
+theme:
+  name: material
+  features:
+    # code copy button
+    - content.code.copy
+  palette: 
+    - scheme: slate
+markdown_extensions:
+  # code highlighting
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  # permalinks
+  - toc:
+      permalink: true
