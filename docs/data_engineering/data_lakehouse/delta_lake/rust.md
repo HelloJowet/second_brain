@@ -7,38 +7,51 @@ This guide provides an introduction to using the Delta Lake Rust library (delta-
 ```toml
 [dependencies]
 deltalake = { version = "0.22.3", features = ["s3"] }
-tokio = "1.42.0"
 ```
 
 ## Create table
 
 ```rust
 use deltalake::kernel::DataType;
-use deltalake::operations::create::CreateBuilder;
-use std::collections::HashMap;
+use deltalake::{DeltaOps, DeltaTable, DeltaTableBuilder, DeltaTableError};
+use std::env;
+
+/// Builds a `DeltaOps` instance for the specified Delta table.
+/// Enabling operations such as creating, reading, and writing data in the Delta Lake format.
+fn get_delta_ops(table_name: &str) -> Result<DeltaOps, DeltaTableError> {
+    let delta_table = DeltaTableBuilder::from_uri(format!("s3://data-lakehouse/{}", table_name)).build()?;
+
+    Ok(DeltaOps::from(delta_table))
+}
+
+async fn create_table(table_name: &str) -> Result<DeltaTable, DeltaTableError> {
+    let delta_ops = get_delta_ops(table_name)?;
+
+    let table = delta_ops
+        .create()
+        .with_table_name("employee")
+        .with_column("id", DataType::INTEGER, false, Default::default())
+        .with_column("name", DataType::STRING, false, Default::default())
+        .await?;
+
+    Ok(table)
+}
 
 #[tokio::main()]
 async fn main() {
+    let table_name = "employee";
+
+    // Set S3 configuration options using environment variables
+    env::set_var("AWS_ENDPOINT_URL", "http://localhost:5561");
+    env::set_var("AWS_REGION", "us-east-1");
+    env::set_var("AWS_ACCESS_KEY_ID", "admin");
+    env::set_var("AWS_SECRET_ACCESS_KEY", "password");
+    env::set_var("AWS_ALLOW_HTTP", "true");
+    env::set_var("AWS_S3_ALLOW_UNSAFE_RENAME", "true");
+
     // Register AWS S3 handlers for Delta Lake operations.
     deltalake::aws::register_handlers(None);
 
-    // Configure S3 storage parameters
-    let mut storage_options = HashMap::new();
-    storage_options.insert("AWS_ENDPOINT_URL".to_string(), "http://localhost:5561".to_string());
-    storage_options.insert("AWS_REGION".to_string(), "us-east-1".to_string());
-    storage_options.insert("AWS_ACCESS_KEY_ID".to_string(), "admin".to_string());
-    storage_options.insert("AWS_SECRET_ACCESS_KEY".to_string(), "password".to_string());
-    storage_options.insert("AWS_ALLOW_HTTP".to_string(), "true".to_string());
-    storage_options.insert("AWS_S3_ALLOW_UNSAFE_RENAME".to_string(), "true".to_string());
-
-    // Create table
-    CreateBuilder::new()
-        .with_location("s3://data-lakehouse/".to_string())
-        .with_storage_options(storage_options)
-        .with_column("id", DataType::INTEGER, false, Default::default())
-        .with_column("name", DataType::STRING, false, Default::default())
-        .await
-        .expect("Table creation failed");
+    create_table(&table_name).await.expect("Table creation failed");
 }
-
 ```
