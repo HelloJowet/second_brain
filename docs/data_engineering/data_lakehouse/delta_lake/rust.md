@@ -131,7 +131,7 @@ use deltalake::DeltaTableError;
 
 // ...
 
-async fn read(table_name: &str) -> Result<Vec<RecordBatch>, DeltaTableError> {
+async fn read_01(table_name: &str) -> Result<Vec<RecordBatch>, DeltaTableError> {
     let delta_ops = get_delta_ops(table_name, true).await?;
 
     let (_, stream) = delta_ops.load().await?;
@@ -145,7 +145,28 @@ async fn main() {
     // ...
 
     let table_name = "employee";
-    let employee_records = read(&table_name).await.expect("Read failed");
+    let employee_records = read_01(&table_name).await.expect("Read failed");
     println!("employee_records: {:?}", employee_records);
+}
+```
+
+or
+
+```rust
+use deltalake::{DeltaTable, DeltaTableError};
+
+async fn read_02(table_path: &str) -> Result<DeltaTable, DeltaTableError> {
+    let table = deltalake::open_table(table_path).await?;
+
+    Ok(table)
+}
+
+#[tokio::main()]
+async fn main() {
+    // ...
+
+    let table_path = "s3://data-lakehouse/employee";
+    let table = read_02(table_path).await.expect("Read failed");
+    println!("{:?}", table);
 }
 ```
