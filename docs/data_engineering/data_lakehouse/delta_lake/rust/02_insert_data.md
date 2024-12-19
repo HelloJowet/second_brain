@@ -1,3 +1,5 @@
+description: delta-rs, rust, insert data
+
 # Insert data
 
 ```rust

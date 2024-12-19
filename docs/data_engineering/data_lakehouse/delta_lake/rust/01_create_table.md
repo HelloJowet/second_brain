@@ -1,4 +1,6 @@
-# Create Table
+description: delta-rs, rust, create table
+
+# Create table
 
 ```rust
 use deltalake::{kernel::DataType, DeltaOps};
