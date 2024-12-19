@@ -1,5 +1,27 @@
 # delta-rs
 
+## S3 configurations
+
+Everytime you want to use S3 as a data store, you need to add the following:
+
+```rust
+// Register S3 handlers
+deltalake::aws::register_handlers(None);
+
+// Set S3 configuration options
+let mut storage_options = HashMap::new();
+storage_options.insert("AWS_ENDPOINT_URL".to_string(), "http://localhost:5561".to_string());
+storage_options.insert("AWS_REGION".to_string(), "us-east-1".to_string());
+storage_options.insert("AWS_ACCESS_KEY_ID".to_string(), "admin".to_string());
+storage_options.insert("AWS_SECRET_ACCESS_KEY".to_string(), "password".to_string());
+storage_options.insert("AWS_ALLOW_HTTP".to_string(), "true".to_string());
+storage_options.insert("AWS_S3_ALLOW_UNSAFE_RENAME".to_string(), "true".to_string());
+```
+
+The S3 configuration options could be set as environment variables too.
+
+S3 requires a locking provider by default ([more information](https://delta-io.github.io/delta-rs/usage/writing/writing-to-s3-with-locking-provider/)). If you don't want to use a locking provider, you can disable it by setting the `AWS_S3_ALLOW_UNSAFE_RENAME` variable to `true`.
+
 ## Create table
 
 ```rust
@@ -11,11 +33,30 @@ async fn main() {
 
     let table = delta_ops
         .create()
-        .with_table_name("table_01")
+        .with_table_name("employee")
         .with_column("id", DataType::INTEGER, false, Default::default())
         .with_column("name", DataType::STRING, false, Default::default())
         .await
         .expect("Table creation failed");
+}
+```
+
+If you want to save the table in a s3 storage, you need to configure the `DeltaOps` object differently:
+
+```rust
+use deltalake::{DeltaOps, DeltaTableBuilder};
+
+#[tokio::main()]
+async fn main() {
+    // ...
+
+    let delta_table_builder = DeltaTableBuilder::from_uri("s3://data-lakehouse/employee")
+        .with_storage_options(storage_options)
+        .build()
+        .expect("Connection to s3 failed");
+    let delta_ops = DeltaOps::from(delta_table_builder);
+
+    // ...
 }
 ```
 
@@ -78,7 +119,9 @@ Open table:
 async fn main() {
     // ...
 
-    let table = deltalake::open_table("s3://data-lakehouse/employee").await.expect("Load failed");
+    let table = deltalake::open_table_with_storage_options("s3://data-lakehouse/employee", storage_options)
+        .await
+        .expect("Load failed");
 }
 ```
 
@@ -99,34 +142,6 @@ async fn main() {
 }
 ```
 
-### S3 storage
-
-```rust
-use std::collections::HashMap;
-
-#[tokio::main()]
-async fn main() {
-    // Register AWS S3 handlers for Delta Lake operations
-    deltalake::aws::register_handlers(None);
-
-    let mut storage_options = HashMap::new();
-    storage_options.insert("AWS_ENDPOINT_URL".to_string(), "http://localhost:5561".to_string());
-    storage_options.insert("AWS_REGION".to_string(), "us-east-1".to_string());
-    storage_options.insert("AWS_ACCESS_KEY_ID".to_string(), "admin".to_string());
-    storage_options.insert("AWS_SECRET_ACCESS_KEY".to_string(), "password".to_string());
-    storage_options.insert("AWS_ALLOW_HTTP".to_string(), "true".to_string());
-    storage_options.insert("AWS_S3_ALLOW_UNSAFE_RENAME".to_string(), "true".to_string());
-
-    let table = deltalake::open_table_with_storage_options("s3://data-lakehouse/employee", storage_options)
-        .await
-        .expect("Load failed");
-}
-```
-
-You can set the storage option parameters as environment variables too.
-
-S3 requires a locking provider by default ([more information](https://delta-io.github.io/delta-rs/usage/writing/writing-to-s3-with-locking-provider/)). If you don't want to use a locking provider, you can disable it by setting the `AWS_S3_ALLOW_UNSAFE_RENAME` variable to `true`.
-
 ## Time travel
 
 To load the previous state of a table, you can use the `open_table_with_version` function:
@@ -140,4 +155,17 @@ If the table is already loaded and you want to change the version number, just u
 
 ```rust
 table.load_version(2).await.expect("Load failed");
+```
+
+## Examining Table
+
+You can find more information about this inside the [official documentation](https://delta-io.github.io/delta-rs/usage/examining-table/).
+
+```rust
+// Metadata
+println!("{:?}", table.metadata().unwrap());
+// Schema
+println!("{:?}", table.schema().unwrap());
+// History
+println!("{:?}", table.history(None).await.unwrap());
 ```
