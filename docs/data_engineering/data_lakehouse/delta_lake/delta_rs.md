@@ -1,4 +1,4 @@
-# delta-rs
+# Rust package: delta-rs
 
 ## S3 configurations
 

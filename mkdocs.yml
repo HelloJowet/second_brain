@@ -19,3 +19,5 @@ markdown_extensions:
   # permalinks
   - toc:
       permalink: true
+  # call outs
+  - admonition
