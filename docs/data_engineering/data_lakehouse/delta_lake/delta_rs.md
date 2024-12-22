@@ -1,4 +1,16 @@
-# Rust package: delta-rs
+title: delta-rs
+
+# delta-rs (Rust)
+
+# Dependencies
+
+```toml
+[dependencies]
+deltalake = { version = "0.22.3", features = ["datafusion", "s3"] }
+tokio = "1.42.0"
+```
+
+The `datafusion` feature is needed to write data to a table.
 
 ## S3 configurations
 
@@ -25,19 +37,21 @@ S3 requires a locking provider by default ([more information](https://delta-io.g
 ## Create table
 
 ```rust
-use deltalake::{kernel::DataType, DeltaOps};
+use deltalake::{
+    kernel::{DataType, StructField},
+    DeltaOps,
+};
 
 #[tokio::main()]
 async fn main() {
     let delta_ops = DeltaOps::new_in_memory();
 
-    let table = delta_ops
-        .create()
-        .with_table_name("employee")
-        .with_column("id", DataType::INTEGER, false, Default::default())
-        .with_column("name", DataType::STRING, false, Default::default())
-        .await
-        .expect("Table creation failed");
+    let columns = vec![
+        StructField::new("id", DataType::INTEGER, false),
+        StructField::new("name", DataType::INTEGER, false),
+        StructField::new("age", DataType::INTEGER, false),
+    ];
+    let table = delta_ops.create().with_table_name("employee").with_columns(columns).await.expect("Table creation failed");
 }
 ```
 
