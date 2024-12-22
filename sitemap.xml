@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://hellojowet.github.io/second_brain/data_engineering/data_lakehouse/apache_iceberg/iceberg_rust/</loc>
+         <lastmod>2024-12-22</lastmod>
+    </url>
+    <url>
+         <loc>https://hellojowet.github.io/second_brain/data_engineering/data_lakehouse/delta_lake/delta_rs/</loc>
+         <lastmod>2024-12-22</lastmod>
+    </url>
+</urlset>
