@@ -2,7 +2,7 @@ title: delta-rs
 
 # delta-rs (Rust)
 
-# Dependencies
+## Dependencies
 
 ```toml
 [dependencies]
