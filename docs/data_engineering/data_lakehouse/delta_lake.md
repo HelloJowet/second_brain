@@ -1,8 +1,8 @@
-title: delta-rs
+# Delta lake
 
-# delta-rs (Rust)
+## delta-rs (Rust)
 
-## Dependencies
+### Dependencies
 
 ```toml
 [dependencies]
@@ -12,7 +12,7 @@ tokio = "1.42.0"
 
 The `datafusion` feature is needed to write data to a table.
 
-## S3 configurations
+### S3 configurations
 
 Everytime you want to use S3 as a data store, you need to add the following:
 
@@ -34,7 +34,7 @@ The S3 configuration options could be set as environment variables too.
 
 S3 requires a locking provider by default ([more information](https://delta-io.github.io/delta-rs/usage/writing/writing-to-s3-with-locking-provider/)). If you don't want to use a locking provider, you can disable it by setting the `AWS_S3_ALLOW_UNSAFE_RENAME` variable to `true`.
 
-## Create table
+### Create table
 
 ```rust
 use deltalake::{
@@ -74,7 +74,7 @@ async fn main() {
 }
 ```
 
-## Insert data
+### Insert data
 
 ```rust
 use deltalake::arrow::array::{Int32Array, RecordBatch, StringArray};
@@ -123,7 +123,7 @@ async fn main() {
 }
 ```
 
-## Load table
+### Load table
 
 Open table:
 
@@ -156,7 +156,7 @@ async fn main() {
 }
 ```
 
-## Time travel
+### Time travel
 
 To load the previous state of a table, you can use the `open_table_with_version` function:
 
@@ -171,7 +171,7 @@ If the table is already loaded and you want to change the version number, just u
 table.load_version(2).await.expect("Load failed");
 ```
 
-## Examining Table
+### Examining Table
 
 You can find more information about this inside the [official documentation](https://delta-io.github.io/delta-rs/usage/examining-table/).
 

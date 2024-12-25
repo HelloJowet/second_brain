@@ -1,6 +1,6 @@
-description: Apache Iceberg Rust Package
+# Apache Iceberg
 
-# Rust package
+## Rust package
 
 !!! bug
 
