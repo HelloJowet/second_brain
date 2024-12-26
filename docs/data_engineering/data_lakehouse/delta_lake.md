@@ -1,4 +1,4 @@
-# Delta lake
+# 🚣🏻 Delta Lake
 
 ## delta-rs (Rust)
 

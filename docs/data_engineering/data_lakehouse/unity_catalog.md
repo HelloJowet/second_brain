@@ -1,4 +1,4 @@
-# Unity Catalog
+# 🗂️ Unity Catalog
 
 ## Getting started (Docker)
 

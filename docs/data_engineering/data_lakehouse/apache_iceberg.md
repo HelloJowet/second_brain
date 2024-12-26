@@ -1,4 +1,4 @@
-# Apache Iceberg
+# 🧊 Apache Iceberg
 
 ## Rust package
 
