@@ -103,3 +103,7 @@ async fn main() {
     println!("{:?}", table_created.metadata());
 }
 ```
+
+### Insert data
+
+The iceberg-rust package currently lacks write support ([source](https://github.com/apache/iceberg-rust/issues/700)).
