@@ -21,3 +21,7 @@ markdown_extensions:
       permalink: true
   # call outs
   - admonition
+plugins:
+  # simplification of page configuration
+  - search
+  - awesome-pages
