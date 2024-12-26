@@ -2,105 +2,104 @@
 
 ## Rust package
 
-!!! bug
-
-    The code below doesn't work. My feeling is that curently (19.12.2024) the `iceberg_rust` package isn't mature yet. For this reason is switched to [Delta Lake](../delta_lake/delta_rs.md).
-
-Dependencies:
+### Dependencies
 
 ```toml
 [dependencies]
-iceberg-rust = "0.6.1"
-iceberg-sql-catalog = "0.6.1"
-object_store = "0.11.1"
+iceberg = "0.4.0"
 tokio = "1.42.0"
 ```
 
-Code:
+### Connect to Catalog
+
+#### Memory Catalog
+
+```toml
+[dependencies]
+iceberg-catalog-memory = "0.4.0"
+```
 
 ```rust
-use std::{collections::HashMap, error::Error, sync::Arc};
+use iceberg::io::FileIOBuilder;
+use iceberg_catalog_memory::MemoryCatalog;
 
-use iceberg_rust::{
-    catalog::Catalog,
-    object_store::ObjectStoreBuilder,
-    spec::{
-        schema::Schema as IcebergSchema,
-        types::{PrimitiveType, StructField as IcebergStructField, StructType, Type},
-    },
-    table::Table as IcebergTable,
-};
-use iceberg_sql_catalog::SqlCatalog;
-use object_store::aws::AmazonS3Builder;
-
-struct Table {
-    name: String,
-    properties: Option<HashMap<String, String>>,
-    struct_fields: Vec<IcebergStructField>,
-}
-
-impl Table {
-    pub async fn to_iceberg_table(self, catalog: Arc<dyn Catalog>, namespace: &[String]) -> Result<IcebergTable, Box<dyn Error>> {
-        let schema = IcebergSchema::builder()
-            .with_fields(StructType::builder().fields(self.struct_fields).build().unwrap())
-            .build()?;
-        let properties = self.properties.unwrap_or(HashMap::new());
-        let table = IcebergTable::builder()
-            .with_name(self.name)
-            .with_schema(schema)
-            .with_properties(properties)
-            .build(namespace, catalog)
-            .await?;
-
-        Ok(table)
-    }
-}
-
-#[tokio::main]
+#[tokio::main()]
 async fn main() {
-    let object_store = ObjectStoreBuilder::S3(
-        AmazonS3Builder::new()
-            .with_endpoint("http://localhost:5561")
-            .with_region("us-east-1")
-            .with_bucket_name("data-lakehouse")
-            .with_access_key_id("admin")
-            .with_secret_access_key("password")
-            .with_virtual_hosted_style_request(true),
-    );
-    let catalog: Arc<dyn Catalog> = Arc::new(
-        SqlCatalog::new(
-            "postgresql://postgres:postgres@localhost:5500/data_lakehouse_catalog",
-            "data_lakehouse_catalog",
-            object_store,
-        )
+    let file_io = FileIOBuilder::new("memory").build().expect("Failed to build file io");
+    let catalog = MemoryCatalog::new(file_io, None);
+}
+```
+
+### Create namespace
+
+```rust
+use std::collections::HashMap;
+
+use iceberg::NamespaceIdent;
+
+#[tokio::main()]
+async fn main() {
+    // ...
+
+    let namespace_ident = NamespaceIdent::new("namespace_01".to_string());
+    let namespace = catalog
+        .create_namespace(&namespace_ident, HashMap::new())
         .await
-        .expect("Sql catalog creation failed"),
-    );
+        .expect("Failed to create namespace");
+}
+```
 
-    let table = Table {
-        name: "table_01".to_owned(),
-        properties: None,
-        struct_fields: vec![
-            IcebergStructField {
-                id: 0,
-                name: "id".to_owned(),
-                required: true,
-                field_type: Type::Primitive(PrimitiveType::Int),
-                doc: None,
-            },
-            IcebergStructField {
-                id: 1,
-                name: "age".to_owned(),
-                required: false,
-                field_type: Type::Primitive(PrimitiveType::Int),
-                doc: None,
-            },
-        ],
-    };
+### Create table
 
-    let namespace = &["namespace_01".to_owned()];
-    table.to_iceberg_table(catalog.clone(), namespace).await.expect("Table creation failed");
+```rust
+use std::collections::HashMap;
 
-    println!("{:?}", catalog);
+use iceberg::{
+    spec::{NestedField, PrimitiveType, Schema, Type},
+    TableCreation,
+};
+
+#[tokio::main()]
+async fn main() {
+    // ...
+
+    let table_schema = Schema::builder()
+        .with_fields(vec![
+            NestedField::optional(1, "foo", Type::Primitive(PrimitiveType::String)).into(),
+            NestedField::required(2, "bar", Type::Primitive(PrimitiveType::Int)).into(),
+            NestedField::optional(3, "baz", Type::Primitive(PrimitiveType::Boolean)).into(),
+        ])
+        .with_schema_id(1)
+        .with_identifier_field_ids(vec![2])
+        .build()
+        .unwrap();
+
+    let table_creation = TableCreation::builder()
+        .name("table_01".to_string())
+        .location("table_01".to_string())
+        .schema(table_schema.clone())
+        .properties(HashMap::from([("owner".to_string(), "Jonas Frei".to_string())]))
+        .build();
+
+    let table = catalog.create_table(&namespace_ident, table_creation).await.unwrap();
+
+    println!("Table created: {:?}", table.metadata());
+}
+```
+
+### Load table
+
+```rust
+use iceberg::TableIdent;
+
+#[tokio::main()]
+async fn main() {
+    // ...
+
+    let table_created = catalog
+        .load_table(&TableIdent::from_strs(["namespace_01", "table_01"]).unwrap())
+        .await
+        .unwrap();
+    println!("{:?}", table_created.metadata());
 }
 ```
