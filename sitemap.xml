@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://hellojowet.github.io/second_brain/data_engineering/data_lakehouse/apache_iceberg/</loc>
+         <lastmod>2025-01-08</lastmod>
+    </url>
+    <url>
+         <loc>https://hellojowet.github.io/second_brain/data_engineering/data_lakehouse/apache_spark/</loc>
+         <lastmod>2025-01-08</lastmod>
+    </url>
+    <url>
+         <loc>https://hellojowet.github.io/second_brain/data_engineering/data_lakehouse/delta_lake/</loc>
+         <lastmod>2025-01-08</lastmod>
+    </url>
+    <url>
+         <loc>https://hellojowet.github.io/second_brain/data_engineering/data_lakehouse/unity_catalog/</loc>
+         <lastmod>2025-01-08</lastmod>
+    </url>
+    <url>
+         <loc>https://hellojowet.github.io/second_brain/data_engineering/storage/minio/</loc>
+         <lastmod>2025-01-08</lastmod>
+    </url>
+    <url>
+         <loc>https://hellojowet.github.io/second_brain/dev_ops/services/authentication/keycloak/</loc>
+         <lastmod>2025-01-08</lastmod>
+    </url>
+</urlset>
