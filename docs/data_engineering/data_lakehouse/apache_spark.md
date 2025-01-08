@@ -107,6 +107,6 @@ spark = (
     .getOrCreate()
 )
 
-spark.sql('CREATE TABLE my_catalog.table8 (name string) USING iceberg;')
-spark.sql("INSERT INTO my_catalog.table8 VALUES ('Alex'), ('Dipankar'), ('Jason')")
+spark.sql('CREATE TABLE my_catalog.table (name string) USING iceberg;')
+spark.sql("INSERT INTO my_catalog.table VALUES ('Alex'), ('Dipankar'), ('Jason')")
 ```

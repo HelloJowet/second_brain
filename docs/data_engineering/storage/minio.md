@@ -27,7 +27,7 @@ services:
     image: minio/mc:RELEASE.2024-10-29T15-34-59Z
     depends_on:
       storage_s3:
-      condition: service_healthy
+        condition: service_healthy
     volumes:
       - ./docker_entrypoint.sh:/docker_entrypoint.sh:z
     entrypoint:
